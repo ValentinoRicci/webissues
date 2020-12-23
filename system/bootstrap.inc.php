@@ -176,8 +176,6 @@ class System_Bootstrap
         if ( !isset( $_SERVER[ 'SERVER_NAME' ] ) || $_SERVER[ 'SERVER_NAME' ] === '' )
             return '';
 
-	file_put_contents( '/var/www/github/webissues/data/log/debug-server.txt', var_export($_SERVER, true), FILE_APPEND );
-	
         if ( isset( $_SERVER[ 'HTTP_ORIGIN' ] ) ) {
 	    $url = $_SERVER[ 'HTTP_ORIGIN' ];
         } else if ( isset( $_SERVER[ 'HTTP_X_FORWARDED_SERVER' ] ) ) {
