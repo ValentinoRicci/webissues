@@ -125,7 +125,7 @@ class System_Core_Debug
         if ( !empty( $this->contents ) ) {
             $dir = dirname( $this->file );
 
-            if ( System_Core_FileSystem::isDirectory( $dir, true ) ) {
+            if ( true || System_Core_FileSystem::isDirectory( $dir, true ) ) {
                 $date = date( 'Y-m-d H:i:s' );
 
                 $request = System_Core_Application::getInstance()->getRequest();

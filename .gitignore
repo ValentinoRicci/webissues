@@ -1,5 +1,6 @@
 .vscode
 assets
+cron/import
 data/log
 data/sites
 data/site.ini

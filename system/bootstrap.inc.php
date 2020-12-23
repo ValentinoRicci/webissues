@@ -176,14 +176,16 @@ class System_Bootstrap
         if ( !isset( $_SERVER[ 'SERVER_NAME' ] ) || $_SERVER[ 'SERVER_NAME' ] === '' )
             return '';
 
-        $schema = ( isset( $_SERVER[ 'HTTPS' ] ) && $_SERVER[ 'HTTPS' ] == 'on' ) ? 'https' : 'http';
-        $host = $_SERVER[ 'SERVER_NAME' ];
-        $url = $schema . '://' . $host;
-
-        if ( isset( $_SERVER[ 'SERVER_PORT' ] ) && !strpos( $host, ':' ) ) {
-            $port = $_SERVER[ 'SERVER_PORT' ];
-            if ( ( $schema == 'http' && $port != 80 ) || ( $schema == 'https' && $port != 443 ) )
-                $url .= ':' . $port;
+	file_put_contents( '/var/www/github/webissues/data/log/debug-server.txt', var_export($_SERVER, true), FILE_APPEND );
+	
+        if ( isset( $_SERVER[ 'HTTP_ORIGIN' ] ) ) {
+	    $url = $_SERVER[ 'HTTP_ORIGIN' ];
+        } else if ( isset( $_SERVER[ 'HTTP_X_FORWARDED_SERVER' ] ) ) {
+            // HTTPS requests are always forwarded by proxy server
+            $url = 'https://' . $_SERVER[ 'HTTP_X_FORWARDED_SERVER' ];
+        } else {
+            // HTTP requests are always direct
+            $url = 'http://' . $_SERVER[ 'SERVER_NAME' ];
         }
 
         $path = $_SERVER[ 'SCRIPT_NAME' ];
@@ -208,9 +210,17 @@ class System_Bootstrap
         if ( $url === '' )
             return '';
 
+	file_put_contents( '/var/www/github/webissues/data/log/debug-server.txt', "getBaseUrl\n", FILE_APPEND );
+	file_put_contents( '/var/www/github/webissues/data/log/debug-server.txt', var_export($url , true), FILE_APPEND );
+
         $path_length = strlen( self::getScriptPath() ) - strlen( self::getRootDir() );
         $url = substr( $url, 0, -$path_length );
 
+	$debugStr = self::getScriptPath();
+	file_put_contents( '/var/www/github/webissues/data/log/debug-server.txt', var_export($debugStr , true), FILE_APPEND );
+	$debugStr = self::getRootDir();
+	file_put_contents( '/var/www/github/webissues/data/log/debug-server.txt', var_export($debugStr , true), FILE_APPEND );
+	file_put_contents( '/var/www/github/webissues/data/log/debug-server.txt', var_export($url , true), FILE_APPEND );
         return $url;
     }
 }

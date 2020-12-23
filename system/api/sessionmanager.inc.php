@@ -173,6 +173,21 @@ class System_Api_SessionManager extends System_Api_Base
     }
 
     /**
+    * Create a session for the specified user without checking password.
+    * @param $login Login name of the user.
+    * @return Array containing user details.
+    */
+    public function getUserByUserName( $username )
+    {
+        $query = 'SELECT user_id, user_name, user_access, user_email, user_language FROM {users}'
+            . ' WHERE user_name = %s';
+
+        $user = $this->connection->queryRow( $query, $username );
+
+        return $user;
+    }
+
+    /**
     * Create a System_Api_Principal based on the current session.
     */
     public function initializePrincipal()

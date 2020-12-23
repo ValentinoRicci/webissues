@@ -46,6 +46,8 @@ class System_Api_IssueManager extends System_Api_Base
     const RequireAdministratorOrOwner = 2;
     /** Do not return attributes with empty values. */
     const HideEmptyValues = 4;
+    /** Do not return attributes with empty values. */
+    const NoCachedValue = 8;
     /*@}*/
 
     const DatabaseStorage = 0;
@@ -74,7 +76,7 @@ class System_Api_IssueManager extends System_Api_Base
     {
         $principal = System_Api_Principal::getCurrent();
 
-        if ( isset( self::$issues[ $issueId ] ) ) {
+        if ( isset( self::$issues[ $issueId ] ) && !($flags & self::NoCachedValue)) {
             $issue = self::$issues[ $issueId ];
         } else {
             $query = 'SELECT i.issue_id, i.issue_name, i.stamp_id, i.stub_id, i.descr_id, i.descr_stub_id,'
@@ -108,7 +110,8 @@ class System_Api_IssueManager extends System_Api_Base
             if ( !( $issue = $this->connection->queryRow( $query, $issueId, $principal->getUserId(), System_Const::AdministratorAccess, System_Const::NormalAccess ) ) )
                 throw new System_Api_Error( System_Api_Error::UnknownIssue );
 
-            self::$issues[ $issueId ] = $issue;
+            if (!($flags & self::NoCachedValue))
+                self::$issues[ $issueId ] = $issue;
         }
 
         if ( $flags & self::RequireAdministrator && $issue[ 'project_access' ] != System_Const::AdministratorAccess )

@@ -112,6 +112,9 @@ class System_Core_Site
         // load debug level contants
         require_once( WI_ROOT_DIR . '/system/core/debug.inc.php' );
 
+	$debug = System_Core_Application::getInstance()->getDebug();
+        $debug->write( 'initializeSite: ', $name, "\n" );
+
         $sites = System_Core_IniFile::parseExtended( '/common/data/site.ini', '/data/site.ini' );
 
         $global = $sites[ 'global' ];

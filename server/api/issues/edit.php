@@ -58,6 +58,8 @@ class Server_Api_Issues_Edit
 
         $helper->checkValues( $values, $attributes, $validator );
 
+$debug = System_Core_Application::getInstance()->getDebug();
+
         foreach ( $oldValues as $id => $oldValue ) {
             if ( !isset( $values[ $id ] ) ) {
                 $attribute = $attributes[ $id ];
@@ -75,10 +77,43 @@ class Server_Api_Issues_Edit
                 $lastStampId = $stampId;
         }
 
+        $subscriptionManager = new System_Api_SubscriptionManager();
+	$sessionManager = new System_Api_SessionManager();
+
         foreach ( $orderedValues as $row ) {
             $stampId = $issueManager->setValue( $issue, $attributes[ $row[ 'attr_id' ] ], $row[ 'attr_value' ] );
             if ( $stampId != false )
                 $lastStampId = $stampId;
+
+            if (substr( $attributes[ $row[ 'attr_id' ] ][ 'attr_def' ], 0, 4 ) === "USER") {
+                $oldUser = $oldValues[ $row[ 'attr_id' ] ];
+		$newUser = $row[ 'attr_value' ];
+
+		$principal = System_Api_Principal::getCurrent();
+
+                if ($issue[ 'created_by' ] !== $oldUser) {
+                    $user = $sessionManager->getUserByUserName($oldUser);
+
+                    $userPrincipal = new System_Api_Principal( $user );
+                    System_Api_Principal::setCurrent( $userPrincipal );
+                    $issueUser = $issueManager->getIssue( $issueId, System_Api_IssueManager::NoCachedValue );
+
+                    $subscription = $subscriptionManager->getSubscriptionForIssue( $issueUser );
+                    $subscriptionManager->deleteSubscription( $subscription);
+		}
+
+                if ($issue[ 'created_by' ] !== $newUser) {
+                    $user = $sessionManager->getUserByUserName($newUser);
+                    $userPrincipal = new System_Api_Principal( $user );
+                    System_Api_Principal::setCurrent( $userPrincipal );
+                    $issueUser = $issueManager->getIssue( $issueId, System_Api_IssueManager::NoCachedValue );
+                    $subscriptionManager->addSubscription( $issueUser );
+                }
+
+                System_Api_Principal::setCurrent( $principal );
+
+            }
+
         }
 
         $result[ 'issueId' ] = $issueId;

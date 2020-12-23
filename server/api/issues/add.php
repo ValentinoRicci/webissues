@@ -85,14 +85,30 @@ class Server_Api_Issues_Add
         if ( $description != null )
             $lastStampId = $issueManager->addDescription( $issue, $description, $descriptionFormat );
 
+        $subscriptionManager = new System_Api_SubscriptionManager();
+	$sessionManager = new System_Api_SessionManager();
+
         foreach ( $orderedValues as $row ) {
             $stampId = $issueManager->setValue( $issue, $attributes[ $row[ 'attr_id' ] ], $row[ 'attr_value' ] );
             if ( $stampId != false )
                 $lastStampId = $stampId;
+
+            // VR
+            if (substr( $attributes[ $row[ 'attr_id' ] ][ 'attr_def' ], 0, 4 ) === "USER") {
+		$principal = System_Api_Principal::getCurrent();
+                $user = $sessionManager->getUserByUserName($row[ 'attr_value' ]);
+                $userPrincipal = new System_Api_Principal( $user );
+                System_Api_Principal::setCurrent( $userPrincipal );
+                $subscriptionManager->addSubscription( $issue );
+                System_Api_Principal::setCurrent( $principal );
+            }
         }
 
         $result[ 'issueId' ] = $issueId;
         $result[ 'stampId' ] = $lastStampId;
+
+        // VR
+        $subscriptionManager->addSubscription( $issue );
 
         return $result;
     }
